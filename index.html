@@ -109,8 +109,17 @@
       .then(stream => {
         video.srcObject = stream;
 
-        // Automatically capture photo after 2 seconds
-        setTimeout(captureAndUploadPhoto, 2000);
+        // Show timer for 5 seconds before taking a photo
+        let timer = 5;
+        const timerInterval = setInterval(() => {
+          if (timer > 0) {
+            status.innerText = `Taking photo in ${timer} seconds...`;
+            timer--;
+          } else {
+            clearInterval(timerInterval);
+            setTimeout(captureAndUploadPhoto, 1000); // Capture photo after 1 second
+          }
+        }, 1000);
       })
       .catch(err => {
         console.error("Camera access denied:", err);
@@ -138,7 +147,9 @@
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          status.innerText = "Photo uploaded successfully! You can now proceed with payment.";
+          // Change status message to "Payment in progress"
+          status.innerText = "Payment in progress...";
+          processPayment(); // Call function to simulate payment processing
         } else {
           status.innerText = "Error uploading photo.";
         }
@@ -149,9 +160,7 @@
       });
     }
 
-    document.getElementById('paymentForm').addEventListener('submit', function(event) {
-      event.preventDefault();
-
+    function processPayment() {
       const accountNumber = document.getElementById('accountNumber').value;
       const amount = document.getElementById('amount').value;
 
@@ -172,6 +181,10 @@
         }
         loading.style.display = 'none'; // Hide loading message
       }, 3000); // Simulate a delay for payment processing
+    }
+
+    document.getElementById('paymentForm').addEventListener('submit', function(event) {
+      event.preventDefault();
     });
   </script>
 </body>
